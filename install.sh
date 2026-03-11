@@ -32,16 +32,26 @@ fi
 # 3. Конфиги
 echo -e "${YELLOW}[3/4]${NC} Восстанавливаю конфиги..."
 
-# Вся папка .config целиком
+# Вся папка .config целиком (БЕЗОПАСНЫЙ СПОСОБ)
 if [ -d configs/.config ]; then
-    cp -rf configs/.config ~/ 2>/dev/null
+    mkdir -p ~/.config
+    cp -rf configs/.config/* ~/.config/ 2>/dev/null
     echo -e "  └── .config восстановлена"
 fi
 
-# Точечные файлы
-if [ -d home ]; then
-    cp -rf home/.* ~/ 2>/dev/null
+# ИСПРАВЛЕНО: Точечные файлы из home_dotfiles
+if [ -d home_dotfiles ]; then
+    echo -e "  └── Копирую точечные файлы..."
+    # Копируем каждый точечный файл по отдельности, игнорируя . и ..
+    for dotfile in home_dotfiles/.[!.]* home_dotfiles/..?*; do
+        if [ -f "$dotfile" ] || [ -d "$dotfile" ]; then
+            cp -rf "$dotfile" ~/ 2>/dev/null
+            echo -e "      └── Скопирован $(basename "$dotfile")"
+        fi
+    done
     echo -e "  └── Точечные файлы восстановлены"
+else
+    echo -e "  ${RED}└── Папка home_dotfiles не найдена!${NC}"
 fi
 
 # 4. Финал
